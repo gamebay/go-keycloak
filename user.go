@@ -6,13 +6,25 @@ import (
 	"github.com/Nerzal/gocloak/v8"
 )
 
-func (c *Client) ListUsers() ([]*gocloak.User, error) {
-	var users []*gocloak.User
+type User struct {
+	ID        string `json:"id"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+}
+
+func (c *Client) ListUsers() ([]*User, error) {
+	var users []*User
 
 	var params gocloak.GetUsersParams
-	users, err := c.gc.GetUsers(context.Background(), c.Token.AccessToken, c.Realm, params)
+	kusers, err := c.gc.GetUsers(context.Background(), c.Token.AccessToken, c.Realm, params)
 	if err != nil {
 		return users, err
+	}
+
+	for _, user := range kusers {
+		users = append(users, parseUser(user))
 	}
 
 	return users, nil
@@ -43,12 +55,13 @@ func (c *Client) CreateUser(username string, password string, email string, firs
 	return id, nil
 }
 
-func (c *Client) GetUser(id string) (*gocloak.User, error) {
-	user, err := c.gc.GetUserByID(context.Background(), c.Token.AccessToken, c.Realm, id)
+func (c *Client) GetUser(id string) (*User, error) {
+	kuser, err := c.gc.GetUserByID(context.Background(), c.Token.AccessToken, c.Realm, id)
 	if err != nil {
 		return nil, err
 	}
 
+	user := parseUser(kuser)
 	return user, nil
 }
 
@@ -76,4 +89,14 @@ func (c *Client) DeleteUser(id string) error {
 	}
 
 	return nil
+}
+
+func parseUser(user *gocloak.User) *User {
+	return &User{
+		ID:        *user.ID,
+		Username:  *user.Username,
+		Email:     *user.Email,
+		FirstName: *user.FirstName,
+		LastName:  *user.LastName,
+	}
 }
