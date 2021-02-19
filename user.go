@@ -18,7 +18,7 @@ func (c *Client) ListUsers() ([]*User, error) {
 	var users []*User
 
 	var params gocloak.GetUsersParams
-	kusers, err := c.gc.GetUsers(context.Background(), c.Token.AccessToken, c.Realm, params)
+	kusers, err := c.gocloak.GetUsers(context.Background(), c.token.AccessToken, c.Realm, params)
 	if err != nil {
 		return users, err
 	}
@@ -42,12 +42,12 @@ func (c *Client) CreateUser(username string, password string, email string, firs
 		EmailVerified: &emailVerified,
 	}
 
-	id, err := c.gc.CreateUser(context.Background(), c.Token.AccessToken, c.Realm, u)
+	id, err := c.gocloak.CreateUser(context.Background(), c.token.AccessToken, c.Realm, u)
 	if err != nil {
 		return "", err
 	}
 
-	err = c.gc.SetPassword(context.Background(), c.Token.AccessToken, id, c.Realm, password, passwordTemporary)
+	err = c.gocloak.SetPassword(context.Background(), c.token.AccessToken, id, c.Realm, password, passwordTemporary)
 	if err != nil {
 		return "", err
 	}
@@ -56,7 +56,7 @@ func (c *Client) CreateUser(username string, password string, email string, firs
 }
 
 func (c *Client) GetUser(id string) (*User, error) {
-	kuser, err := c.gc.GetUserByID(context.Background(), c.Token.AccessToken, c.Realm, id)
+	kuser, err := c.gocloak.GetUserByID(context.Background(), c.token.AccessToken, c.Realm, id)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (c *Client) UpdateUser(id string, username string, email string, firstName 
 		LastName:  &lastName,
 	}
 
-	err := c.gc.UpdateUser(context.Background(), c.Token.AccessToken, c.Realm, user)
+	err := c.gocloak.UpdateUser(context.Background(), c.token.AccessToken, c.Realm, user)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (c *Client) UpdateUser(id string, username string, email string, firstName 
 }
 
 func (c *Client) DeleteUser(id string) error {
-	err := c.gc.DeleteUser(context.Background(), c.Token.AccessToken, c.Realm, id)
+	err := c.gocloak.DeleteUser(context.Background(), c.token.AccessToken, c.Realm, id)
 	if err != nil {
 		return err
 	}

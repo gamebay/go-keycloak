@@ -11,13 +11,13 @@ import (
 
 type Client struct {
 	sync.RWMutex
-	gc     gocloak.GoCloak
-	ctx    context.Context
-	Token  *gocloak.JWT
-	Addr   string
-	Realm  string
-	Client string
-	Secret string
+	gocloak gocloak.GoCloak
+	ctx     context.Context
+	token   *gocloak.JWT
+	Addr    string
+	Realm   string
+	Client  string
+	Secret  string
 }
 
 func New(addr string, realm string, client string, secret string) (*Client, error) {
@@ -30,28 +30,31 @@ func New(addr string, realm string, client string, secret string) (*Client, erro
 	}
 
 	c := &Client{
-		gc:     gc,
-		ctx:    ctx,
-		Token:  token,
-		Addr:   addr,
-		Realm:  realm,
-		Client: client,
-		Secret: secret,
+		gocloak: gc,
+		ctx:     ctx,
+		token:   token,
+		Addr:    addr,
+		Realm:   realm,
+		Client:  client,
+		Secret:  secret,
 	}
-	go c.startRefresh()
+	go c.refresh()
 
 	return c, nil
 }
 
-func (c *Client) startRefresh() {
-	for {
-		c.RLock()
-		refreshTicker := time.NewTicker(time.Second * time.Duration(c.Token.ExpiresIn-5))
-		c.RUnlock()
+func (c *Client) refresh() {
+	accessTicker := time.NewTicker(time.Second * time.Duration(c.token.ExpiresIn-285))
+	refreshTicker := time.NewTicker(time.Second * time.Duration(c.token.RefreshExpiresIn-10))
 
+	for {
 		select {
+		case <-accessTicker.C:
+			if err := c.Refresh(); err != nil {
+				log.Println(err)
+			}
 		case <-refreshTicker.C:
-			if err := c.refresh(); err != nil {
+			if err := c.Login(); err != nil {
 				log.Println(err)
 			}
 		case <-c.ctx.Done():
@@ -60,17 +63,32 @@ func (c *Client) startRefresh() {
 	}
 }
 
-func (c *Client) refresh() error {
-	c.RLock()
-	token, err := c.gc.RefreshToken(c.ctx, c.Token.RefreshToken, c.Client, c.Secret, c.Realm)
-	c.RUnlock()
+func (c *Client) Login() error {
+	c.Lock()
+	defer c.Unlock()
+
+	token, err := c.gocloak.LoginClient(c.ctx, c.Client, c.Secret, c.Realm)
 	if err != nil {
 		return err
 	}
 
+	log.Println("login")
+	c.token = token
+
+	return nil
+}
+
+func (c *Client) Refresh() error {
 	c.Lock()
-	c.Token = token
-	c.Unlock()
+	defer c.Unlock()
+
+	token, err := c.gocloak.RefreshToken(c.ctx, c.token.RefreshToken, c.Client, c.Secret, c.Realm)
+	if err != nil {
+		return err
+	}
+
+	log.Println("refresh")
+	c.token = token
 
 	return nil
 }
