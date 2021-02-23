@@ -1,6 +1,11 @@
 package keycloak
 
-import "github.com/Nerzal/gocloak/v8"
+import (
+	"fmt"
+
+	"github.com/Nerzal/gocloak/v8"
+	"github.com/lestrrat-go/jwx/jwt"
+)
 
 type Token struct {
 	IDToken          string `json:"id_token"`
@@ -26,4 +31,13 @@ func parseToken(jwt *gocloak.JWT) *Token {
 		SessionState:     jwt.SessionState,
 		Scope:            jwt.Scope,
 	}
+}
+
+func DecodeAccessToken(token string) (map[string]interface{}, error) {
+	p, err := jwt.Parse([]byte(token))
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse token: %v", err)
+	}
+
+	return p.PrivateClaims(), nil
 }

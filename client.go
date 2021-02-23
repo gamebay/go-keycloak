@@ -44,7 +44,7 @@ func New(addr string, realm string, client string, secret string) (*Client, erro
 }
 
 func (c *Client) refresh() {
-	accessTicker := time.NewTicker(time.Second * time.Duration(c.token.ExpiresIn-285))
+	accessTicker := time.NewTicker(time.Second * time.Duration(c.token.ExpiresIn-10))
 	refreshTicker := time.NewTicker(time.Second * time.Duration(c.token.RefreshExpiresIn-10))
 
 	for {
