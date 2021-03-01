@@ -2,7 +2,6 @@ package keycloak
 
 import (
 	"errors"
-	"log"
 )
 
 var (
@@ -13,7 +12,6 @@ var (
 func (c *Client) LoginUser(username string, password string) (*Token, error) {
 	jwt, err := c.gocloak.Login(c.ctx, c.Client, c.Secret, c.Realm, username, password)
 	if err != nil {
-		log.Println(err)
 		return nil, ErrInvalidCredentials
 	}
 

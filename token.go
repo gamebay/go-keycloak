@@ -8,7 +8,7 @@ import (
 )
 
 type Token struct {
-	IDToken          string `json:"id_token"`
+	IDToken          string `json:"id_token,omitempty"`
 	AccessToken      string `json:"access_token"`
 	ExpiresIn        int    `json:"expires_in"`
 	RefreshToken     string `json:"refresh_token"`

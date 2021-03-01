@@ -31,6 +31,7 @@ func (c *Client) ListUsers() ([]*User, error) {
 }
 
 func (c *Client) CreateUser(username string, password string, email string, firstName string, lastName string) (string, error) {
+	enabled := true
 	emailVerified := true
 	passwordTemporary := false
 
@@ -40,6 +41,7 @@ func (c *Client) CreateUser(username string, password string, email string, firs
 		FirstName:     &firstName,
 		LastName:      &lastName,
 		EmailVerified: &emailVerified,
+		Enabled:       &enabled,
 	}
 
 	id, err := c.gocloak.CreateUser(context.Background(), c.token.AccessToken, c.Realm, u)
