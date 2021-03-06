@@ -72,7 +72,6 @@ func (c *Client) Login() error {
 		return err
 	}
 
-	log.Println("login")
 	c.token = token
 
 	return nil
@@ -87,7 +86,6 @@ func (c *Client) Refresh() error {
 		return err
 	}
 
-	log.Println("refresh")
 	c.token = token
 
 	return nil
